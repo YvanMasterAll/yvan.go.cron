@@ -19,14 +19,14 @@ type Err struct {
 	msg  string
 }
 
-type program struct{}
-
 var (
 	ErrRequest = Err{100, "Occur Error When Request"}
 	ErrIO = Err{101, "Occur Error When Using IO"}
 	ErrDone = Err{0, "Done Success"}
-	ErrService = Err{102, "Occur Error When Start Service"}
+	ErrService = Err{102, "Occur Error When Operate Service"}
 )
+
+type program struct{}
 
 //var LOGPATH = getCurrentDirectory() + "/" + "_.log"
 var LOGPATH = "_.log"
@@ -37,7 +37,7 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
-	// fetchLogo_Op()
+	fetchLogo_Op()
 
 	c := cron.New()
 	c.AddFunc("@every 24h", fetchLogo_Op, "op.gg")
@@ -56,14 +56,48 @@ func main() {
 	}
 
 	prg := &program{}
+
 	s, err := service.New(prg, svcConfig)
 	if err != nil {
 		log(ErrService.msg, "op.gg")
 	}
-	err = s.Run()
-	if err != nil {
-		log(ErrService.msg, "op.gg")
+
+	if len(os.Args) > 1 {
+		if os.Args[1] == "install" {
+			err := s.Install()
+			if err != nil{
+				log(ErrService.msg, "op.gg")
+			}
+
+			err = s.Run()
+			if err != nil {
+				log(ErrService.msg, "op.gg")
+			}
+		}
+		if os.Args[1] == "uninstall" {
+			err := s.Uninstall()
+			if err != nil{
+				log(ErrService.msg, "op.gg")
+			}
+		}
+		if os.Args[1] == "run" {
+			err := s.Run()
+			if err != nil{
+				log(ErrService.msg, "op.gg")
+			}
+		}
+		if os.Args[1] == "start" {
+			err := s.Start()
+			if err != nil{
+				log(ErrService.msg, "op.gg")
+			}
+		}
 	}
+
+	//err = s.Start()
+	//if err != nil {
+	//	log(ErrService.msg, "op.gg")
+	//}
 }
 
 func fetchLogo_Op() {
